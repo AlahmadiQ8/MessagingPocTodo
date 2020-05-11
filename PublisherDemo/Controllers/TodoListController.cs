@@ -12,6 +12,7 @@ using MessagingService.Interfaces;
 using PublisherDemo.DTOs.Requests;
 using PublisherDemo.DTOs.Responses;
 using PublisherDemo.Models;
+using Action = PublisherDemo.Models.Action;
 
 namespace PublisherDemo.Controllers
 {
@@ -21,9 +22,9 @@ namespace PublisherDemo.Controllers
     {
         private readonly TodoContext _context;
         private readonly IMapper _mapper;
-        private IMessagingService<SampleMessage> _messagingService;
+        private IMessagingService<TodoNotification> _messagingService;
 
-        public TodoListController(TodoContext context, IMapper mapper, IMessagingService<SampleMessage> messagingService)
+        public TodoListController(TodoContext context, IMapper mapper, IMessagingService<TodoNotification> messagingService)
         {
             _context = context;
             _mapper = mapper;
@@ -34,7 +35,6 @@ namespace PublisherDemo.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TodoListResponse>>> GetTodoList()
         {
-            _messagingService.Publish(new SampleMessage());
             return await _context.TodoList.Include(l => l.TodoItems).ProjectTo<TodoListResponse>(_mapper.ConfigurationProvider).ToListAsync();
         }
 
@@ -52,22 +52,24 @@ namespace PublisherDemo.Controllers
             return _mapper.Map<TodoListResponse>(todoList);
         }
 
-        // PUT: api/TodoList/5/TodoItem
-        [HttpPut("{id}/TodoItem")]
-        public async Task<IActionResult> PutTodoList(int id, TodoItemRequest todoItem)
+        // Post: api/TodoList/5/TodoItem
+        [HttpPost("{id}/TodoItem")]
+        public async Task<IActionResult> PostTodoList(int id, TodoItemRequest todoItem)
         {
             var list = await _context.TodoList.FirstOrDefaultAsync(l => l.Id == id);
             if (list == null)
             {
                 return NotFound();
             }
-            
-            list.TodoItems.Add(new TodoItem
+
+            var item = new TodoItem
             {
                 Description = todoItem.Description,
                 DueDate = todoItem.DueDate,
                 Done = todoItem.Done,
-            });
+            };
+            
+            list.TodoItems.Add(item);
             
             try
             {
@@ -83,9 +85,33 @@ namespace PublisherDemo.Controllers
                 throw;
             }
 
+            await _messagingService.PublishAsync(new TodoNotification
+            {
+                Action = Action.Created,
+                TodoItem = _mapper.Map<TodoItemResponse>(item)
+            });
             return NoContent();
         }
 
+        // Put: api/TodoList/5/TodoItem/4
+        [HttpPut("{id}/TodoItem/{itemId}")]
+        public async Task<IActionResult> PutTodoList(int id, int itemId, TodoItemRequest todoItemRequest)
+        {
+            var item = await _context.TodoItem.FindAsync(itemId);
+            if (item == null)
+            {
+                return NotFound();
+            }
+            _mapper.Map(todoItemRequest, item);
+            await _context.SaveChangesAsync();
+            await _messagingService.PublishAsync(new TodoNotification
+            {
+                Action = Action.Updated,
+                TodoItem = _mapper.Map<TodoItemResponse>(item)
+            });
+            return NoContent();
+        }
+        
         // POST: api/TodoList
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.

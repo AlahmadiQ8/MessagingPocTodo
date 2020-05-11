@@ -14,6 +14,10 @@ namespace PublisherDemo.DTOs
             
             CreateMap<TodoList, TodoListRequest>();
             CreateMap<TodoItem, TodoItemRequest>();
+            
+            CreateMap<TodoItemRequest, TodoItem>()
+                .ForAllMembers(opt => 
+                    opt.Condition((src, dest, srcMember) => srcMember != null));
         }
     }
 }

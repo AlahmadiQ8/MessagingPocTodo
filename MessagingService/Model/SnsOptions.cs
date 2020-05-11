@@ -1,6 +1,6 @@
 namespace MessagingService.Model
 {
-    public class MessagingOptions
+    public class SnsOptions
     {
         public string TopicArn { get; set; }
     }

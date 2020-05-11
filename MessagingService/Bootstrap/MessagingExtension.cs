@@ -9,9 +9,9 @@ namespace MessagingService.Bootstrap
 {
     public static class MessagingExtension
     {
-        public static IServiceCollection AddMessagingService<T>(this IServiceCollection services, Action<MessagingOptions> options = null)
+        public static IServiceCollection AddSnsPublishService<T>(this IServiceCollection services, Action<SnsOptions> options = null)
         {
-            services.Configure<MessagingOptions>(options);
+            services.Configure(options);
             services.AddSingleton<IMessagingService<T>, SnsMessagingService<T>>();
             return services;
         }

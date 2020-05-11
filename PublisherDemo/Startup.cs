@@ -1,20 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using Data;
 using MessagingService.Bootstrap;
-using PublisherDemo.DTOs.Responses;
 using PublisherDemo.Models;
 
 namespace PublisherDemo
@@ -31,12 +24,15 @@ namespace PublisherDemo
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
 
             services.AddDbContext<TodoContext>(opt => opt.UseSqlite("DataSource=../Todo.db"));
             services.AddSwaggerDocument();
             services.AddAutoMapper(typeof(Startup));
-            services.AddMessagingService<SampleMessage>(options => options.TopicArn = "Sample ARN");
+            services.AddSnsPublishService<TodoNotification>(options => options.TopicArn = "arn:aws:sns:us-east-1:903520281285:TodoItemCRUD");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
