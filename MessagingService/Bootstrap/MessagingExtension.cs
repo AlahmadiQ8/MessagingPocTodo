@@ -12,7 +12,14 @@ namespace MessagingService.Bootstrap
         public static IServiceCollection AddSnsPublishService<T>(this IServiceCollection services, Action<SnsOptions> options = null)
         {
             services.Configure(options);
-            services.AddSingleton<IMessagingService<T>, SnsMessagingService<T>>();
+            services.AddSingleton<IPublishingService<T>, SnsPublishingService<T>>();
+            return services;
+        }        
+        
+        public static IServiceCollection AddSqsSubscriberService<T>(this IServiceCollection services, Action<SqsOptions> options = null)
+        {
+            services.Configure(options);
+            services.AddSingleton<ISubscriberService<T>, SqsProcessorService<T>>();
             return services;
         }
     }

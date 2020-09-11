@@ -6,6 +6,7 @@
 
     <ItemGroup>
       <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.5.0-beta" />
+      <PackageReference Include="AWSSDK.SQS" Version="3.5.0-beta" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.0-preview.3.20215.2" />
       <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0-preview.3.20215.2" />
       <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0-preview.3.20215.2" />
